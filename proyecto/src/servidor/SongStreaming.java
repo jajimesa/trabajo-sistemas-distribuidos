@@ -37,8 +37,6 @@ public class SongStreaming {
 				// Obtengo el audioInputStream del fichero de la canción solicitada.
 				AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(song.getFile());
 				
-				AudioFormat audioFormat = audioInputStream.getFormat();
-				
 				// Streameo el contenido de la canción vía UDP
 				byte[] b = new byte[128];
 				int leido;
@@ -48,9 +46,12 @@ public class SongStreaming {
 					DatagramPacket packet = new DatagramPacket(b, 0, leido, socket.getInetAddress(), socket.getPort() + 1);
 					udpSocket.send(packet);
 				}
+				System.out.println("Servidor> El envío de paquetes udp al cliente " +
+									socket.getInetAddress() + "/" + socket.getPort() + " ha finalizado.");	
+		
 			} catch (UnsupportedAudioFileException | IOException e) {
 				e.printStackTrace();
-			}	
+			}
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}

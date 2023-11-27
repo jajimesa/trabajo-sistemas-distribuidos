@@ -26,10 +26,12 @@ public class AtenderPeticion extends Thread {
 		this.socket = socket;
 	}
 	
-	
-	public void run() 
+	/* El run de AtenderPeticion se encarga de estar a la espera de peticiones del cliente,
+	 * que son en formato String. Si el cliente se desconecta, cuando lee la String recibe
+	 * null y de esta forma puede saber cuándo retornar.
+	 */
+	@Override public void run() 
 	{
-
 		try {
 			// Se declaran en este orden
 			this.outputRespuesta = new ObjectOutputStream(socket.getOutputStream());
@@ -39,7 +41,12 @@ public class AtenderPeticion extends Thread {
 			{
 				String peticion = inputPeticion.readLine();
 				
-				if(peticion.startsWith("GET")) 
+				if(peticion==null) {
+					System.out.println("Servidor> Se ha desconectado el cliente " 
+										+ socket.getInetAddress() + "/" + socket.getPort() + ".");
+					return;
+				}			
+				else if(peticion.startsWith("GET")) 
 				{
 					atenderGET(peticion);
 				}
@@ -47,7 +54,6 @@ public class AtenderPeticion extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 	
 	/* Método que atiende una petición GET de un cliente. Comprueba el tipo de petición GET y actúa:
@@ -67,26 +73,24 @@ public class AtenderPeticion extends Thread {
 		//TODO: añadir un GET RADIO
 	}
 	
-	
+	/* Método que recibe y retransmite la canción que el cliente quiere reproducir mediante un objeto
+	 * de tipo SongStreaming.
+	 */
 	private void streamSong() {
 		try {
 			Song s = (Song) inputPeticion.readObject();
 			s = SongBuilder.construirCancion(s);
-			
-			// Le envío al cliente el sample size de la canción para que pueda reproducirla correctamente.
-			AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(s.getFile());
-			int sampleSize = audioInputStream.getFormat().getSampleSizeInBits();
-			outputRespuesta.writeInt(sampleSize);
-			outputRespuesta.flush();
-			
+				
 			SongStreaming songStreaming = new SongStreaming(socket, s);
 			songStreaming.init();
 			
-		} catch (ClassNotFoundException | IOException | UnsupportedAudioFileException e) {
+		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
+	/* Método que envía al cliente la lista de canciones de las que dispone el servidor.
+	 */
 	private void songList() {
 		
 		// Genero un listado de las canciones del servidor
