@@ -1,0 +1,7 @@
+* Añadir una espera en el cliente hasta que el SongPlayer termine
+* Por qué en mi portátil no me reproduce algunas canciones
+* Cómo enviar el samplerate y que no pete
+* Implementar un parar y resumir
+* Arreglar el acelerón que pilla al comienzo
+* Implementar listas de reproducción
+* Implementar hilo de radio

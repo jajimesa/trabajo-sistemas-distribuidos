@@ -1,0 +1,2 @@
+Excepción al escoger altavoces para reproducir el clip:
+	https://stackoverflow.com/questions/55680752/why-does-attempting-to-get-a-clip-throw-exception
