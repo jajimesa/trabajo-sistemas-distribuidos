@@ -12,12 +12,21 @@ public class UdpSongPlayer implements Runnable {
 	private ByteArrayOutputStream out;
 	private CyclicBarrier barrier;
 
+	/* UdpSongPlayer es un Runnable que recibe una SourceDataLine para reproducir bytes, un ByteArrayOutputStream
+	 * del que recibe los bytes a reproducir, y una CyclicBarrier que sirve para sincronizar el UdpSongPlayer con el
+	 * SongPlayer que lo inicia.
+	 * PRE: La SourceDataline se encuentra Open.
+	 */
 	public UdpSongPlayer(SourceDataLine sourceDataLine, ByteArrayOutputStream out, CyclicBarrier barrier) {
 		this.sourceDataLine = sourceDataLine;
 		this.out = out;
 		this.barrier = barrier;
 	}
 	
+	/* El método run inicia la SourceDataLine y lee bytes del ByteArrayOutputStream mientras esté abierta (el método
+	 * closeAndAwait la cierra). Si la canción finaliza, por razones de la implementación del SourceDataLine, vuelve 
+	 * a comenzar a leer desde cero el buffer del ArrayOutputStream (la canción se reinicia).
+	 */
 	@Override public void run() 
 	{
 		sourceDataLine.start(); // Activo la lectura (grabación) de esta linea
@@ -32,13 +41,21 @@ public class UdpSongPlayer implements Runnable {
 		}
 		System.out.println("Cliente(reproductor)> Reproducción finalizada.");
 	}
-
-	public void await() {
+	
+	/* Método que pone a esperar a la CyclicBarrier y que cierra la SourceDataLine para finalizar
+	 * la reproducción de la canción y la propia ejecución del UdpSongPlayer.
+	 */
+	public void awaitAndClose() {
 		try {
 			this.barrier.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (BrokenBarrierException e) {
+
+			if(sourceDataLine!=null && sourceDataLine.isRunning()) {
+				sourceDataLine.stop();
+				sourceDataLine.flush();
+				sourceDataLine.close();	
+			}
+
+		} catch (InterruptedException | BrokenBarrierException e) {
 			e.printStackTrace();
 		}
 	}

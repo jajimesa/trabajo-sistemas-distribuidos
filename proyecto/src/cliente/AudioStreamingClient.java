@@ -87,7 +87,14 @@ public class AudioStreamingClient {
 			else if (opcion==3) {
 				// Finaliza
 				return;
-			}	
+			}
+			
+			// Le doy unos segundos de cancha antes de mostrar de nuevo el menú.
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

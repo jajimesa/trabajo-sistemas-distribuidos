@@ -31,7 +31,6 @@ public class SongPlayer {
 	public void init() 
 	{
 		DatagramSocket udpSocket = null; // El DatagramSocket será utilizado para recibir la información
-		SourceDataLine sourceDataLine = null; // La SourceDataLine, para reproducir la información
 		
 		/* Declaramos "final" el array para que la referencia a este objeto sea inmutable.
 		 * Este array de buffer adaptativo va a recibir los bytes de los paquetes udp y va a nutrir a la
@@ -50,7 +49,7 @@ public class SongPlayer {
 			AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 48000, 16, 2, 4 , 44100, false);
 			
 			// Obtengo y abro la SourceDataLine (conexión con la salida de audio) a partir del formato de audio.
-			sourceDataLine = (SourceDataLine) AudioSystem.getSourceDataLine(audioFormat);
+			SourceDataLine sourceDataLine = (SourceDataLine) AudioSystem.getSourceDataLine(audioFormat);
 			sourceDataLine.open(audioFormat);
 						
 			UdpSongReceptor udpSongReceptor = new UdpSongReceptor(udpSocket, out);
@@ -135,7 +134,8 @@ public class SongPlayer {
 							}
 						}
 						else if(opcion==2) {
-							udpSongPlayer.await();
+							// TODO: poner aquí la cyclic barrier y que el udpSongPlayer sólo se cierre
+							udpSongPlayer.awaitAndClose();
 							break;
 						}
 					}			
@@ -185,11 +185,6 @@ public class SongPlayer {
 		finally {
 			// Ahora cierro recursos
 			if(udpSocket!=null) udpSocket.close(); // --> genera una que excepción finaliza el hilo receptor
-			if(sourceDataLine!=null && sourceDataLine.isRunning()) {
-				sourceDataLine.stop();
-				sourceDataLine.flush();
-				sourceDataLine.close();	
-			}
 			try {
 				out.flush();
 				out.close();

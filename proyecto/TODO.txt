@@ -1,9 +1,7 @@
-* Añadir una espera en el cliente hasta que el SongPlayer termine
+* Añadir una espera en el cliente hasta que el SongPlayer termine -- HECHO
 * Por qué en mi portátil no me reproduce algunas canciones -- HECHO
-* Cómo enviar el samplerate y que no pete -- PASAMOS DE HACERLO
-* Implementar un parar y resumir
-* Arreglar el acelerón que pilla al comienzo -- NI IDEA
 * Implementar listas de reproducción 
 * Implementar hilo de radio
 * Añadir una tarea que cada cinco minutos solicite al servidor la lista de canciones.
-* Arreglar pause/resume
+* Arreglar pause/resume -- HECHO
+* Añadir mensaje de "Reproduciendo X canción..."

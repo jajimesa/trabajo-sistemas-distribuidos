@@ -54,6 +54,10 @@ public class SongStreaming {
 			}
 		} catch (SocketException e) {
 			e.printStackTrace();
+		} 
+		finally {
+			// Ahora cierro recursos
+			if(udpSocket!=null) udpSocket.close(); 	
 		}
 	}
 }
