@@ -6,3 +6,4 @@
 * Implementar listas de reproducción 
 * Implementar hilo de radio
 * Añadir una tarea que cada cinco minutos solicite al servidor la lista de canciones.
+* Arreglar pause/resume
