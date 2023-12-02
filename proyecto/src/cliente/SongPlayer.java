@@ -21,11 +21,9 @@ import modelo.Song;
 public class SongPlayer {
 
 	private Socket socket;
-	private Song song;
 
-	public SongPlayer(Socket socket, Song song) {
+	public SongPlayer(Socket socket) {
 		this.socket = socket;
-		this.song = song;
 	}
 	
 	public void init() 

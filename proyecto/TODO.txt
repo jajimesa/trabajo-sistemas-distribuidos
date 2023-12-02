@@ -4,4 +4,8 @@
 * Implementar hilo de radio
 * Añadir una tarea que cada cinco minutos solicite al servidor la lista de canciones.
 * Arreglar pause/resume -- HECHO
-* Añadir mensaje de "Reproduciendo X canción..."
+* Añadir mensaje de "Reproduciendo X canción..." -- HECHO
+* Arreglar el parser. OJO, las canciones tienen que tener fichero, invocar a SongBuilder!!!!!!
+* El parser necesita sincronizar parte de su código!!!
+* Cerrar la pool de hilos del servidor al acabar.
+* Cerrar el socket en atenderPeticion una vez acabe.

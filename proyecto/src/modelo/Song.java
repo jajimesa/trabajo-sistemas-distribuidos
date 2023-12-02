@@ -37,6 +37,12 @@ public class Song implements Serializable {
 		this.duration = -1.0f;
 	}
 	
+	public Song(String title, Float duration) {
+		this.file = null;
+		this.title = title;
+		this.duration = duration;
+	}
+	
 	private float calcularDuracion(File file) {
 		AudioInputStream audioInputStream = null;
 		try {

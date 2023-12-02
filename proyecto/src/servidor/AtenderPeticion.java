@@ -5,15 +5,14 @@ import java.io.ObjectOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 import modelo.Song;
+import servidor.playlists.PlaylistParser;
 
 
 public class AtenderPeticion extends Thread {
@@ -21,6 +20,7 @@ public class AtenderPeticion extends Thread {
 	private Socket socket;
 	private ObjectOutputStream outputRespuesta;
 	private ObjectInputStream inputPeticion;
+	private PlaylistParser playlistParser;
 	
 	public AtenderPeticion(Socket socket) {
 		this.socket = socket;
@@ -37,6 +37,10 @@ public class AtenderPeticion extends Thread {
 			this.outputRespuesta = new ObjectOutputStream(socket.getOutputStream());
 			this.inputPeticion = new ObjectInputStream(socket.getInputStream());
 			
+			// El usuario se identifica (necesario para gestionar sus playlists)
+			String idUsuario = inputPeticion.readLine();
+			this.playlistParser = new PlaylistParser(idUsuario);
+			
 			while(true) 
 			{
 				String peticion = inputPeticion.readLine();
@@ -49,6 +53,9 @@ public class AtenderPeticion extends Thread {
 				else if(peticion.startsWith("GET")) 
 				{
 					atenderGET(peticion);
+				}
+				else if(peticion.startsWith("POST")) {
+					atenderPOST(peticion);
 				}
 			}
 		} catch (IOException e) {
@@ -68,9 +75,26 @@ public class AtenderPeticion extends Thread {
 		} 
 		else if(peticion.equals("GET SONGLIST")) 
 		{
-			songList();
+			sendSongList();
+		}
+		else if(peticion.equals("GET PLAYLISTS")) 
+		{
+			sendPlaylists();
+		}
+		else if(peticion.equals("GET PLAYLIST")) {
+			streamPlaylist();
 		}
 		//TODO: añadir un GET RADIO
+	}
+	
+	/* Método que atiende una petición POST del cliente. Comprueba el tipo de petición POST y actúa:
+	 * 1) POST PLAYLIST: crea una playlist.
+	 */
+	private void atenderPOST(String peticion) {
+		if(peticion.equals("POST PLAYLIST")) 
+		{
+			createPlaylist();
+		} 
 	}
 	
 	/* Método que recibe y retransmite la canción que el cliente quiere reproducir mediante un objeto
@@ -89,9 +113,20 @@ public class AtenderPeticion extends Thread {
 		}
 	}
 	
+	/* Método que recibe y retransmite la playlist que el cliente quiere reproducir mediante un objeto
+	 * de tipo PlaylistStreaming.
+	 */
+	private void streamPlaylist() {
+		
+		//TODO terminar
+		
+		
+		
+	}
+	
 	/* Método que envía al cliente la lista de canciones de las que dispone el servidor.
 	 */
-	private void songList() {
+	private void sendSongList() {
 		
 		// Genero un listado de las canciones del servidor
 		File directorioCanciones = new File("./src/servidor/canciones");
@@ -107,6 +142,59 @@ public class AtenderPeticion extends Thread {
 			outputRespuesta.flush();
 			outputRespuesta.reset();
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/* Método que envía al cliente sus playlists, si las tiene.
+	 */
+	private void sendPlaylists() {
+		
+		HashMap<String, LinkedList<Song>> playlists = playlistParser.getPlaylists();
+		
+		// Envío las playlists al cliente
+		try {
+			outputRespuesta.writeObject(playlists);
+			outputRespuesta.flush();
+			outputRespuesta.reset();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/* Método que crea una playlist dado un nombre de playlist, si esta no existe ya
+	 * para el usuario que solicita crearla.
+	 */
+	@SuppressWarnings("unchecked")
+	public void createPlaylist() 
+	{
+		try {
+			/* 1º Recibo el nombre de la playlist que el usuario quiere crear. Si ya tiene una playlist con ese
+			 * nombre, no se lo permito.
+			 */
+			String name = null;
+			while(true) {
+				name = inputPeticion.readLine();
+				if(!playlistParser.playlistExists(name)) 
+				{
+					outputRespuesta.writeBytes("VALID NAME\r\n");
+					outputRespuesta.flush();
+					outputRespuesta.flush();
+					break;
+				}
+					outputRespuesta.writeBytes("NAME ALREADY TAKEN\r\n");
+					outputRespuesta.flush();
+			}
+			playlistParser.addPlaylist(name);
+			
+			/* 2º Recibo las canciones que el usuario quiere añadir y las meto dentro de la playlist.
+			 */
+			List<Song> canciones = (List<Song>) inputPeticion.readObject();
+			playlistParser.addAllSongs(name, canciones);
+			
+		} catch (IOException e) {
+				e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

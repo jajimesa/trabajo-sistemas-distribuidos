@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<userPlaylists>
+	<user identificador="Javier">
+		<playlist playlistName="Rock">
+		</playlist>
+		<playlist playlistName="Los Beatles">
+		</playlist>
+	</user>
+</userPlaylists>
