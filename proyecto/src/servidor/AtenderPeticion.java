@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -116,12 +117,19 @@ public class AtenderPeticion extends Thread {
 	/* Método que recibe y retransmite la playlist que el cliente quiere reproducir mediante un objeto
 	 * de tipo PlaylistStreaming.
 	 */
-	private void streamPlaylist() {
-		
-		//TODO terminar
-		
-		
-		
+	private void streamPlaylist() 
+	{
+		try {
+			List<Song> aux = (List<Song>) inputPeticion.readObject();
+			List<Song> canciones = new ArrayList<Song>(aux.size());
+			aux.forEach(s -> canciones.add(SongBuilder.construirCancion(s)));
+			
+			SongStreaming songStreaming = new SongStreaming(socket, canciones);
+			songStreaming.init();
+			
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/* Método que envía al cliente la lista de canciones de las que dispone el servidor.
@@ -189,7 +197,12 @@ public class AtenderPeticion extends Thread {
 			
 			/* 2º Recibo las canciones que el usuario quiere añadir y las meto dentro de la playlist.
 			 */
-			List<Song> canciones = (List<Song>) inputPeticion.readObject();
+			List<Song> aux = (List<Song>) inputPeticion.readObject();
+			
+			// Tengo ahora que construir las canciones debidamente, con su file asociados
+			List<Song> canciones = new ArrayList<Song>(aux.size());
+			aux.forEach(s -> canciones.add(SongBuilder.construirCancion(s)));
+			
 			playlistParser.addAllSongs(name, canciones);
 			
 		} catch (IOException e) {

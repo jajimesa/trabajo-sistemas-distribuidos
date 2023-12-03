@@ -3,6 +3,12 @@ package servidor.playlists;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,14 +18,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import modelo.Song;
 
 public class PlaylistParser {
 
+	private static File baseDeDatos = new File("./src/servidor/playlists/playlists.xml");
+	
 	private DocumentBuilderFactory dbf;
 	private DocumentBuilder db;
 	private Document dom;
@@ -30,7 +40,7 @@ public class PlaylistParser {
 		try {
 			this.dbf = DocumentBuilderFactory.newInstance();
 			this.db = dbf.newDocumentBuilder();
-			this.dom = db.parse(new File("./src/servidor/playlists/playlists.xml"));
+			this.dom = db.parse(baseDeDatos);
 
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
@@ -41,7 +51,8 @@ public class PlaylistParser {
 		}
 	}
 	
-	/* Método que devuelve cierto si existe una playlist del usuario identificado por
+	/* PRE: El usuario ya ha sido dado de alta.
+	 * Método que devuelve cierto si existe una playlist del usuario identificado por
 	 * "idUsuario" con el nombre de playlist "nombrePlaylist".
 	 */
 	public boolean playlistExists(String namePlaylist) 
@@ -65,57 +76,92 @@ public class PlaylistParser {
 		return false;
 	}
 	
+	/* PRE: El usuario no está dado de alta.
+	 * Método que da de alta al usuario. Se invoca desde otros métodos con control de
+	 * la sincronización.
+	 */
+	public void addUsuario() 
+	{
+		Element usuario = dom.createElement("user");
+		usuario.setAttribute("identificador", idUsuario);
+		usuario.setIdAttribute("identificador", true);
+		usuario.setTextContent("");
+		Element root = dom.getDocumentElement();
+		root.appendChild(usuario);
+		saveContext();
+	}
+	
 	/* PRE: No existe ya una playlist con nombre "namePlaylist".
 	 * Método que crea una playlist con nombre "namePlaylist". 
 	 */
 	public void addPlaylist(String namePlaylist) 
 	{
-		Element usuario = (Element) dom.getElementById(idUsuario);
-		
-		if(usuario==null) {
-			usuario = dom.createElement("user");
-			usuario.setAttribute("identificador", idUsuario);
-			Element root = dom.getDocumentElement();
-			root.appendChild(usuario);
+		synchronized(baseDeDatos) 
+		{
+			// 1º Actualizo el dom por si otro usuario ha modificado el xml
+			try {
+				this.dom = db.parse(baseDeDatos);
+			} catch (SAXException | IOException e) {
+				e.printStackTrace();
+			}
+			
+			// 2º Busco el usuario, si no existe lo creo
+			Element usuario = (Element) dom.getElementById(idUsuario);
+			if(usuario==null) {
+				addUsuario();
+			}
+			
+			// 3º Añado la playlist y guardo los cambios
+			Element playlist = dom.createElement("playlist");
+			playlist.setAttribute("playlistName", namePlaylist);
+			usuario.appendChild(playlist);
+			saveContext();
 		}
-		
-		Element playlist = dom.createElement("playlist");
-		playlist.setAttribute("namePlaylist", namePlaylist);
-		usuario.appendChild(playlist);
 	}
 	
 	/* Método que añade canciones a una playlist existente de nombre "namePlaylist".
 	 */
 	public void addAllSongs(String namePlaylist, List<Song> songs) 
 	{
-		Element usuario = (Element) dom.getElementById(idUsuario);
-		
-		if(usuario==null) {
-			usuario = dom.createElement("user");
-			usuario.setAttribute("identificador", idUsuario);
-			Element root = dom.getDocumentElement();
-			root.appendChild(usuario);
-		}
-		
-		NodeList listaPlaylists = usuario.getElementsByTagName("playlist");
-		int n = listaPlaylists.getLength();
-		for(int i=0; i<n; i++) 
+		synchronized(baseDeDatos) 
 		{
-			Element playlist = (Element) listaPlaylists.item(i);
-			String playlistName = playlist.getAttribute("playlistName");
-			if (playlistName.equals(namePlaylist)) 
+			// 1º Actualizo el dom por si otro usuario ha modificado el xml
+			try {
+				this.dom = db.parse(baseDeDatos);
+			} catch (SAXException | IOException e) {
+				e.printStackTrace();
+			}
+			
+			// 2º Obtengo el usuario (que existe)
+			Element usuario = (Element) dom.getElementById(idUsuario);
+			
+			// 3º Busco la playlist en particular
+			NodeList listaPlaylists = usuario.getElementsByTagName("playlist");
+			
+			// 4º Añado las canciones a la playlist
+			int n = listaPlaylists.getLength();
+			for(int i=0; i<n; i++) 
 			{
-				for(Song s : songs) {
-					Element song = dom.createElement("song");
-					Element title = dom.createElement("title");
-					title.setTextContent(s.getTitle());
-					Element duration = dom.createElement("duration");
-					title.setTextContent(String.valueOf(s.getDuration()));
-					song.appendChild(title);
-					song.appendChild(duration);
-					playlist.appendChild(song);
+				Element playlist = (Element) listaPlaylists.item(i);
+				String playlistName = playlist.getAttribute("playlistName");
+				if (playlistName.equals(namePlaylist)) 
+				{
+					for(Song s : songs) {
+						Element song = dom.createElement("song");
+						Element title = dom.createElement("title");
+						Text aux = dom.createTextNode(s.getTitle());
+						title.appendChild(aux);
+						Element duration = dom.createElement("duration");
+						aux = dom.createTextNode(String.valueOf(s.getDuration()));
+						duration.appendChild(aux);
+						song.appendChild(title);
+						song.appendChild(duration);
+						playlist.appendChild(song);
+					}
+					break;
 				}
 			}
+			saveContext();
 		}
 	}
 	
@@ -141,11 +187,8 @@ public class PlaylistParser {
 		Element usuario = (Element) dom.getElementById(idUsuario);
 		
 		if(usuario==null) {
-			usuario = dom.createElement("user");
-			usuario.setAttribute("identificador", idUsuario);
-			Element root = dom.getDocumentElement();
-			root.appendChild(usuario);
-			return null;
+			addUsuario();
+			return playlists;
 		}
 		
 		NodeList listaPlaylists = usuario.getElementsByTagName("playlist");
@@ -171,5 +214,47 @@ public class PlaylistParser {
 		}
 		
 		return playlists;
+	}
+	
+	/* asdasdasdasdas
+	 * asdasdasdasdasd
+	 */
+	public List<Song> getSongsFromPlaylist()
+	{
+		// TODO
+		return null;
+	}
+	
+	
+	/* Método que guarda el contexto en la base de datos xml. Contiene código crítico y el
+	 * método que invoque a este debe manejar la sincronización adecuadamente.
+	 */
+	public void saveContext() 
+	{
+		// Transformo el DOM  en un nuevo xml actualizado
+		try {
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer;
+			transformer = transformerFactory.newTransformer();
+			
+			DOMSource source = new DOMSource(dom);
+			StreamResult result = new StreamResult("./src/servidor/playlists/playlists.xml");
+			
+			// Para que esté identado el xml
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+			// Para que me guarde la declaración del !DOCTYPE y la relación con su dtd
+	        DocumentType doctype = dom.getDoctype();
+	        if(doctype != null) {
+	            //transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctype.getPublicId());
+	            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctype.getSystemId());
+	        }
+	        
+			transformer.transform(source, result);	
+			
+		} catch(TransformerException e) {
+			e.printStackTrace();	
+		}
 	}
 }

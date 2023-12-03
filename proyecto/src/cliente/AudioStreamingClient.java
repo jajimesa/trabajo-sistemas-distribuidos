@@ -111,7 +111,7 @@ public class AudioStreamingClient {
 			
 			// Le doy unos segundos de cancha antes de mostrar de nuevo el menú.
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -130,6 +130,8 @@ public class AudioStreamingClient {
 		canciones.forEach(s->titulos.add(s.getTitle()));
 		int tituloMasLargo = titulos.stream().map(String::length).max(Integer::compare).get();
 		tituloMasLargo++;
+		
+		if(tituloMasLargo<10) tituloMasLargo = 10; // Por si solo hay títulos cortitos
 		
 		// Imprimo por pantalla la tabla con el listado de canciones.
 		System.out.printf("\t%-6s%-" + tituloMasLargo + "s%-6s\n", "Id", "Título", "Duración");
@@ -208,10 +210,10 @@ public class AudioStreamingClient {
 	 */
 	public Song seleccionarCancion() {
 		
-		System.out.println("Cliente> Seleccione un Id de canción:");
 		if(this.canciones==null) {
 			solicitarCanciones();
 		}
+		if(this.canciones.size()>0) System.out.println("Cliente> Seleccione un Id de canción:");
 		mostrarCanciones(this.canciones);
 		
 		int opcion = -1;
@@ -297,19 +299,26 @@ public class AudioStreamingClient {
 			solicitarPlaylists();
 		}
 		
-		List<String> titulos = new ArrayList<String>(playlists.size());
-		playlists.keySet().forEach(s->titulos.add(s));
-		int tituloMasLargo = titulos.stream().map(String::length).max(Integer::compare).get();
-		tituloMasLargo++;
-		
-		// Imprimo por pantalla la tabla con el listado de canciones.
-		System.out.printf("\t%-6s%-" + tituloMasLargo + "s%-6s\n", "Id", "Título", "Canciones");
-		int i=0;
-		for(String titulo : titulos) 
+		if(this.playlists.size()>0) 
 		{
-			int tam = playlists.get(titulo).size();
-			System.out.printf("\t%-6s%-" + tituloMasLargo + "s%-6s\n", i, titulo, tam);
-			i++;
+			List<String> titulos = new ArrayList<String>(playlists.size());
+			playlists.keySet().forEach(s->titulos.add(s));
+			int tituloMasLargo = titulos.stream().map(String::length).max(Integer::compare).get();
+			tituloMasLargo++;
+			
+			if(tituloMasLargo<10) tituloMasLargo = 10; // Por si solo hay títulos cortitos
+			
+			// Imprimo por pantalla la tabla con el listado de playlists.
+			System.out.printf("\t%-6s%-" + tituloMasLargo + "s%-6s\n", "Id", "Título", "Canciones");
+			int i=0;
+			for(String titulo : titulos) 
+			{
+				int tam = playlists.get(titulo).size();
+				System.out.printf("\t%-6s%-" + tituloMasLargo + "s%-6s\n", i, titulo, tam);
+				i++;
+			}
+		} else {
+			System.out.println("Cliente(playlists)> No has creado ninguna lista de reproducción todavía.");
 		}
 	}
 	
@@ -337,42 +346,53 @@ public class AudioStreamingClient {
 	 */
 	public void mostrarCancionesPlaylist() 
 	{
-		System.out.println("Cliente(playlists)> Seleccione un Id de playlist:");
-		if(this.canciones==null) {
-			solicitarCanciones();
-		}
-		mostrarCanciones(this.canciones);
+		// 1º Selecciono la canción
+		List<Song> playlist = seleccionarPlaylist();
 		
-		int opcion = -1;
-		while(true) 
+		// 2º Busco su título
+		String nombrePlaylist = obtenerTituloPlaylist(playlist);
+
+		if(playlist!=null && playlist.size()>0) 
 		{
-			if(teclado.hasNextInt()) 
-			{
-				opcion = teclado.nextInt();
-				if(opcion>=0 && opcion<playlists.size()) {
-					break;
-				} else {
-					System.out.println("Cliente(playlists)> Introduce un Id correcto, por favor:");
-				}
-			}
+			System.out.println("Cliente(playlists)> \"" + nombrePlaylist + "\":");
+			mostrarCanciones(playlist);
+		} else {
+			System.out.println("Cliente(playlists)> La lista de reproducción \"" + nombrePlaylist + "\" está vacía.");
 		}
-		
-		int i=0;
+	}
+	
+	/* Método que devuelve el nombre de la playlist.
+	 */
+	public String obtenerTituloPlaylist(List<Song> playlist)
+	{
+
 		String nombrePlaylist = null;
-		for(String titulo : playlists.keySet()) {
-			if(i==opcion) {
+		for(String titulo : this.playlists.keySet()) 
+		{
+			// No es la mejor manera, pero por cómo tengo todo implementado funciona
+			if(this.playlists.get(titulo).equals(playlist)) {
 				nombrePlaylist = titulo;
+				break;
 			}
 		}
-				
-		mostrarCanciones(playlists.get(nombrePlaylist));
+		return nombrePlaylist;
 	}
 	
 	/* Método para reproducir una playlist una vez seleccionada.
 	 */
 	public void reproducirPlaylist() 
 	{
+		// 1º Selecciono qué playlist reproducir
 		List<Song> playlist = seleccionarPlaylist();
+		
+		// 2º Busco su título
+		String nombrePlaylist = obtenerTituloPlaylist(playlist);
+		
+		if(playlist.size()==0) {
+			System.out.println("Cliente(playlists)> La lista de reproducción \"" + nombrePlaylist + "\" está vacía.");
+			return;
+		}
+		
 		try {
 			// Hago la petición de streaming de playlist
 			outputPeticion.writeBytes("GET PLAYLIST\r\n");
@@ -381,6 +401,8 @@ public class AudioStreamingClient {
 			outputPeticion.flush();
 			
 			// Reproduzco la playlist
+			System.out.println("Cliente(Reproductor)> Reproduciendo \"" + nombrePlaylist + "\"...");
+			
 			SongPlayer songPlayer = new SongPlayer(socket);
 			songPlayer.init();
 			
@@ -391,13 +413,13 @@ public class AudioStreamingClient {
 	
 	/* Método para seleccionar una playlist.
 	 */
-	public List<Song> seleccionarPlaylist() {
-		System.out.println("Cliente(playlists)> Seleccione un Id de canción:");
-		
+	public List<Song> seleccionarPlaylist() 
+	{		
 		if(this.playlists==null) {
 			solicitarPlaylists();
-			mostrarPlaylists();
 		}
+		if(this.playlists.size()>0) System.out.println("Cliente(playlists)> Seleccione un Id de lista de reproducción:");
+		mostrarPlaylists();
 		
 		int opcion = -1;
 		while(true) 
@@ -419,6 +441,7 @@ public class AudioStreamingClient {
 				playlist = playlists.get(s);
 				break;
 			}
+			i++;
 		}
 		return playlist;
 	}
@@ -483,6 +506,9 @@ public class AudioStreamingClient {
 			outputPeticion.writeObject(canciones);
 			outputPeticion.flush();
 			System.out.println("Cliente(playlists)> Playlist guardada.");
+			
+			// 4º Actualizo mi listado local con las playlist
+			solicitarPlaylists();
 			
 		} catch (IOException e) {
 			e.printStackTrace();

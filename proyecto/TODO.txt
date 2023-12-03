@@ -1,11 +1,12 @@
 * Añadir una espera en el cliente hasta que el SongPlayer termine -- HECHO
 * Por qué en mi portátil no me reproduce algunas canciones -- HECHO
-* Implementar listas de reproducción 
 * Implementar hilo de radio
 * Añadir una tarea que cada cinco minutos solicite al servidor la lista de canciones.
 * Arreglar pause/resume -- HECHO
 * Añadir mensaje de "Reproduciendo X canción..." -- HECHO
 * Arreglar el parser. OJO, las canciones tienen que tener fichero, invocar a SongBuilder!!!!!!
 * El parser necesita sincronizar parte de su código!!!
-* Cerrar la pool de hilos del servidor al acabar.
-* Cerrar el socket en atenderPeticion una vez acabe.
+* Cerrar la pool de hilos del servidor al acabar. -- HECHO
+* Cerrar el socket en atenderPeticion una vez acabe. -- HECHO
+* Cambiar el método seleccionarPlaylist.
+* Hacer la reproducción de las playlists.

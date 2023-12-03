@@ -99,7 +99,7 @@ public class SongPlayer {
 				@Override public void run() 
 				{
 					Scanner teclado = new Scanner(System.in);
-					System.out.println("Cliente(Controlador)> Escribe 0 para parar, 1 para resumir y 2 para salir:");
+					System.out.println("Cliente(Controlador)> Escribe 0 para parar, 1 para volver a empezar y 2 para salir:");
 					while(true) 
 					{
 						int opcion = -1;

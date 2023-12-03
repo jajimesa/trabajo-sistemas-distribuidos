@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT userPlaylists (user)*>
-<!ELEMENT user (playlist)+>
+<!ELEMENT user (playlist)*>
 	<!ATTLIST user identificador ID #REQUIRED>
 <!ELEMENT playlist (song)*>
 	<!ATTLIST playlist playlistName CDATA #REQUIRED>      

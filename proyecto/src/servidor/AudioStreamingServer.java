@@ -18,9 +18,7 @@ public class AudioStreamingServer {
 		ExecutorService pool = Executors.newCachedThreadPool();
 		
 		try(ServerSocket server = new ServerSocket(6666)) {
-			
-			// TODO: Iniciar hilo con la radio.
-			
+						
 			while(true) 
 			{
 				try 
@@ -35,6 +33,7 @@ public class AudioStreamingServer {
 			}
 		} 
 		catch (IOException e) {
+			pool.shutdown();
 			e.printStackTrace();
 		}
 	}
