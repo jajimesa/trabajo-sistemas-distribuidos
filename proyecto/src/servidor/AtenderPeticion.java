@@ -58,6 +58,9 @@ public class AtenderPeticion extends Thread {
 				else if(peticion.startsWith("POST")) {
 					atenderPOST(peticion);
 				}
+				else if(peticion.startsWith("DELETE")) {
+					atenderDELETE(peticion);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -78,24 +81,41 @@ public class AtenderPeticion extends Thread {
 		{
 			sendSongList();
 		}
-		else if(peticion.equals("GET PLAYLISTS")) 
+		else if(peticion.equals("GET ALL PLAYLISTS")) 
 		{
 			sendPlaylists();
 		}
 		else if(peticion.equals("GET PLAYLIST")) {
 			streamPlaylist();
 		}
-		//TODO: añadir un GET RADIO
 	}
 	
 	/* Método que atiende una petición POST del cliente. Comprueba el tipo de petición POST y actúa:
 	 * 1) POST PLAYLIST: crea una playlist.
+	 * 2) POST SONG: añade una canción a una playlist.
 	 */
 	private void atenderPOST(String peticion) {
 		if(peticion.equals("POST PLAYLIST")) 
 		{
 			createPlaylist();
-		} 
+		}
+		else if(peticion.equals("POST SONG")) {
+			addSongToPlaylist();
+		}
+	}
+	
+	/* Método que atiende una petición DELETE del cliente. Comprueba el tipo de petición DELETE y actúa:
+	 * 1) DELETE PLAYLIST: borra una playlist.
+	 * 2) DELETE SONG: borra una canción de una playlist.
+	 */
+	private void atenderDELETE(String peticion) {
+		if(peticion.equals("DELETE PLAYLIST")) 
+		{
+			deletePlaylist();
+		}
+		else if(peticion.equals("DELETE SONG")) {
+			deleteSongFromPlaylist();
+		}
 	}
 	
 	/* Método que recibe y retransmite la canción que el cliente quiere reproducir mediante un objeto
@@ -210,5 +230,20 @@ public class AtenderPeticion extends Thread {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/* Método que añade una canción a una playlist previa selección por consola de la playlist.
+	 */
+	private void addSongToPlaylist() 
+	{
+		
+	}
+	
+	private void deletePlaylist() {
+		
+	}
+	
+	private void deleteSongFromPlaylist() {
+		
 	}
 }

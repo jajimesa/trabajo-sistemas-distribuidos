@@ -120,6 +120,37 @@ public class PlaylistParser {
 		}
 	}
 	
+	/* PRE: La playlist a eliminar existe.
+	 * Método que borra la playlist de nombre "nombrePlaylist".
+	 */
+	public void removePlaylist(String namePlaylist) 
+	{
+		synchronized(baseDeDatos) 
+		{
+			// 1º Actualizo el dom por si otro usuario ha modificado el xml
+			try {
+				this.dom = db.parse(baseDeDatos);
+			} catch (SAXException | IOException e) {
+				e.printStackTrace();
+			}
+			
+			// 2º Busco el usuario (si existe)
+			Element usuario = (Element) dom.getElementById(idUsuario);
+			
+			// 3º Busco, elimino la playlist y guardo los cambios
+			NodeList playlists = usuario.getElementsByTagName("playlistName");			
+			int tam = playlists.getLength();
+			Element playlist = null;
+			for(int i=0; i<tam; i++) 
+			{
+				playlist = (Element) playlists.item(i);
+				if(playlist.getAttribute("namePlaylist").equals(namePlaylist)) break;
+			}
+			usuario.removeChild(playlist);
+			saveContext();
+		}
+	}
+	
 	/* Método que añade canciones a una playlist existente de nombre "namePlaylist".
 	 */
 	public void addAllSongs(String namePlaylist, List<Song> songs) 
@@ -172,6 +203,12 @@ public class PlaylistParser {
 		List<Song> aux = new ArrayList<Song>(1);
 		aux.add(s);
 		addAllSongs(namePlaylist, aux);
+	}
+	
+	/* Método que borra una canción existente en una playlist existente de nombre "nombrePlaylist".
+	 */
+	public void removeSong(String namePlaylist, Song s) {
+		
 	}
 
 	/* Método que devuelve aquellas playlists del usuario identificado por "idUsuario"

@@ -4,9 +4,10 @@
 * Añadir una tarea que cada cinco minutos solicite al servidor la lista de canciones.
 * Arreglar pause/resume -- HECHO
 * Añadir mensaje de "Reproduciendo X canción..." -- HECHO
-* Arreglar el parser. OJO, las canciones tienen que tener fichero, invocar a SongBuilder!!!!!!
+* Arreglar el parser. OJO, las canciones tienen que tener fichero, invocar a SongBuilder!!!!!! -- HECHO
 * El parser necesita sincronizar parte de su código!!!
 * Cerrar la pool de hilos del servidor al acabar. -- HECHO
 * Cerrar el socket en atenderPeticion una vez acabe. -- HECHO
-* Cambiar el método seleccionarPlaylist.
-* Hacer la reproducción de las playlists.
+* Cambiar el método seleccionarPlaylist. -- HECHO
+* Hacer la reproducción de las playlists. -- HECHO
+* Acabar (o no) el borrado de playlists/canciones

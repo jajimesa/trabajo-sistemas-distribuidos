@@ -330,7 +330,7 @@ public class AudioStreamingClient {
 	{
 		try {
 			// Hago la petición de las playlists
-			outputPeticion.writeBytes("GET PLAYLISTS\r\n");
+			outputPeticion.writeBytes("GET ALL PLAYLISTS\r\n");
 			outputPeticion.flush();
 
 			this.playlists = (HashMap<String, LinkedList<Song>>) inputRespuesta.readObject();
