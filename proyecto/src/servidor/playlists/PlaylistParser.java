@@ -110,7 +110,8 @@ public class PlaylistParser {
 			if(usuario==null) {
 				addUsuario();
 			}
-			
+			usuario = (Element) dom.getElementById(idUsuario);
+
 			// 3º Añado la playlist y guardo los cambios
 			Element playlist = dom.createElement("playlist");
 			playlist.setAttribute("playlistName", namePlaylist);
