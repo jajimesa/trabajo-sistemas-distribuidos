@@ -10,4 +10,5 @@
 * Cerrar el socket en atenderPeticion una vez acabe. -- HECHO
 * Cambiar el método seleccionarPlaylist. -- HECHO
 * Hacer la reproducción de las playlists. -- HECHO
-* Acabar (o no) el borrado de playlists/canciones
+* Acabar (o no) el borrado de playlists/canciones -- HECHO
+* Poner a private todos los métodos del cliente. -- HECHO

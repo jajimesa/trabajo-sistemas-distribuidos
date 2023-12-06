@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 
 import modelo.Song;
@@ -99,8 +100,9 @@ public class AtenderPeticion extends Thread {
 		{
 			createPlaylist();
 		}
-		else if(peticion.equals("POST SONG")) {
-			addSongToPlaylist();
+		else if(peticion.equals("POST SONGS")) 
+		{
+			addSongsToPlaylist();
 		}
 	}
 	
@@ -113,8 +115,9 @@ public class AtenderPeticion extends Thread {
 		{
 			deletePlaylist();
 		}
-		else if(peticion.equals("DELETE SONG")) {
-			deleteSongFromPlaylist();
+		else if(peticion.equals("DELETE SONGS")) 
+		{
+			deleteSongsFromPlaylist();
 		}
 	}
 	
@@ -234,16 +237,55 @@ public class AtenderPeticion extends Thread {
 	
 	/* Método que añade una canción a una playlist previa selección por consola de la playlist.
 	 */
-	private void addSongToPlaylist() 
+	@SuppressWarnings("unchecked")
+	private void addSongsToPlaylist() 
 	{
-		
+		try {
+			// 1º Recibo el nombre de la playlist y las canciones que quiero añadirle
+			String nombrePlaylist = inputPeticion.readLine();
+			List<Song> cancionesNuevas = (List<Song>) inputPeticion.readObject();
+			
+			// 2º Invoco al método de añadir canciones de la clase PlaylistParser
+			playlistParser.addAllSongs(nombrePlaylist, cancionesNuevas);
+			
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private void deletePlaylist() {
-		
+	/* Método que borra una playlist existente.
+	 */
+	private void deletePlaylist() 
+	{
+		try
+		{
+			// 1º Recibo el nombre de la playlist a borrar
+			String nombrePlaylist = inputPeticion.readLine();
+			
+			// 2º Mando al parser borrar la playlist
+			playlistParser.removePlaylist(nombrePlaylist);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private void deleteSongFromPlaylist() {
-		
+	/* Método que borra las canciones de una playlist seleccionadas por el usuario.
+	 */
+	@SuppressWarnings("unchecked")
+	private void deleteSongsFromPlaylist() 
+	{
+		try {
+			// 1º Recibo el nombre de la playlist y las canciones que quiero quitarle
+			String nombrePlaylist = inputPeticion.readLine();
+			HashSet<Integer> cancionesPosicionesBorrar = (HashSet<Integer>) inputPeticion.readObject();
+			// Aquí para borrar no nos hace falta construir bien las canciones con SongBuilder
+			
+			// 2º Invoco al método de borrar canciones de la clase PlaylistParser
+			playlistParser.removeAllSongs(nombrePlaylist, cancionesPosicionesBorrar);
+			
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}	
 	}
 }

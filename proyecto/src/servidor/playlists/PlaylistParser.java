@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -138,15 +139,21 @@ public class PlaylistParser {
 			Element usuario = (Element) dom.getElementById(idUsuario);
 			
 			// 3º Busco, elimino la playlist y guardo los cambios
-			NodeList playlists = usuario.getElementsByTagName("playlistName");			
+			NodeList playlists = usuario.getElementsByTagName("playlist");			
 			int tam = playlists.getLength();
 			Element playlist = null;
 			for(int i=0; i<tam; i++) 
 			{
 				playlist = (Element) playlists.item(i);
-				if(playlist.getAttribute("namePlaylist").equals(namePlaylist)) break;
+				if(playlist.getAttribute("playlistName").equals(namePlaylist)) 
+				{
+					// Si no tomo su nodo padre y tomo directamente usuario salta excepción
+					playlist.getParentNode().removeChild(playlist);
+					break;
+				}
 			}
-			usuario.removeChild(playlist);
+			
+			// 4º Guardo los cambios
 			saveContext();
 		}
 	}
@@ -196,19 +203,48 @@ public class PlaylistParser {
 			saveContext();
 		}
 	}
-	
-	/* Método que añade una canción a una playlist existente de nombre "namePlaylist".
+
+	/* Método que borra una serie de canciones existentes en una playlist de nombre "namePlaylist".
 	 */
-	public void addSong(String namePlaylist, Song s) {
-		List<Song> aux = new ArrayList<Song>(1);
-		aux.add(s);
-		addAllSongs(namePlaylist, aux);
-	}
-	
-	/* Método que borra una canción existente en una playlist existente de nombre "nombrePlaylist".
-	 */
-	public void removeSong(String namePlaylist, Song s) {
-		
+	public void removeAllSongs(String namePlaylist, HashSet<Integer> songPositions) 
+	{
+		synchronized(baseDeDatos) 
+		{
+			// 1º Actualizo el dom por si otro usuario ha modificado el xml
+			try {
+				this.dom = db.parse(baseDeDatos);
+			} catch (SAXException | IOException e) {
+				e.printStackTrace();
+			}
+			
+			// 2º Obtengo el usuario (que existe)
+			Element usuario = (Element) dom.getElementById(idUsuario);
+			
+			// 3º Busco la playlist en particular
+			NodeList listaPlaylists = usuario.getElementsByTagName("playlist");
+			
+			// 4º Borro las canciones de la playlist
+			int n = listaPlaylists.getLength();
+			for(int i=0; i<n; i++) 
+			{
+				Element playlist = (Element) listaPlaylists.item(i);
+				String playlistName = playlist.getAttribute("playlistName");
+				if (playlistName.equals(namePlaylist)) 
+				{
+					NodeList songs = playlist.getElementsByTagName("song");
+					for(Integer j : songPositions) {
+						/* Como la misma canción, por ser una playlist, puede estar repetida
+						 * pero solo queremos borrar la que ocupa la posición j-ésima, usamos
+						 * un Set de posiciones. */
+						Element song = (Element) songs.item(j.intValue());
+						// Si en lugar del getParentNode tomas playlist, salta excepción.
+						song.getParentNode().removeChild(song);
+					}
+					break;
+				}
+			}
+			saveContext();
+		}
 	}
 
 	/* Método que devuelve aquellas playlists del usuario identificado por "idUsuario"
@@ -253,17 +289,7 @@ public class PlaylistParser {
 		
 		return playlists;
 	}
-	
-	/* asdasdasdasdas
-	 * asdasdasdasdasd
-	 */
-	public List<Song> getSongsFromPlaylist()
-	{
-		// TODO
-		return null;
-	}
-	
-	
+
 	/* Método que guarda el contexto en la base de datos xml. Contiene código crítico y el
 	 * método que invoque a este debe manejar la sincronización adecuadamente.
 	 */
