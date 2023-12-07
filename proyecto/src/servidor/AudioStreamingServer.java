@@ -24,6 +24,8 @@ public class AudioStreamingServer {
 				try 
 				{
 					Socket cliente = server.accept();
+					System.out.println("Servidor> Se ha conectado el cliente " +
+							cliente.getInetAddress() + "/" + cliente.getPort() + ".");
 					AtenderPeticion atenderPeticion = new AtenderPeticion(cliente);
 					pool.execute(atenderPeticion);
 					

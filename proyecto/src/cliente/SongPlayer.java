@@ -6,8 +6,6 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Scanner;
-//import java.util.Timer;
-//import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -15,8 +13,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-
-import modelo.Song;
 
 public class SongPlayer {
 
@@ -49,51 +45,15 @@ public class SongPlayer {
 			// Obtengo y abro la SourceDataLine (conexión con la salida de audio) a partir del formato de audio.
 			SourceDataLine sourceDataLine = (SourceDataLine) AudioSystem.getSourceDataLine(audioFormat);
 			sourceDataLine.open(audioFormat);
-						
+					
+			// Creo el receptor udp
 			UdpSongReceptor udpSongReceptor = new UdpSongReceptor(udpSocket, out);
-//			Thread threadReceptor = new Thread() {
-//				
-//				@Override public void run() 
-//				{
-//					byte [] buffer = new byte[128];
-//					try {
-//						while(true) 
-//						{
-//							DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-//							udpSocket.receive(packet);
-//							
-//							byte [] b = packet.getData();
-//
-//							out.write(b, 0, packet.getLength()); // Escribo lo que he grabado
-//						}
-//						
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			};
-			
+
+			// Creo el reproductor udp
 			CyclicBarrier barrier = new CyclicBarrier(2);
 			UdpSongPlayer udpSongPlayer = new UdpSongPlayer(sourceDataLine, out, barrier);
-//			Thread threadPlayer = new Thread() {
-//
-//				@Override public void run() 
-//				{
-//					sourceDataLine.start(); // Activo la lectura (grabación) de esta linea
-//					
-//					while(sourceDataLine.isOpen()) 
-//					{
-//						// No guardarme el array de bytes produce problemas de sincronización entre los hilos
-//						byte [] b = out.toByteArray();
-//						
-//						//sourceDataLine.write(out.toByteArray(), 0, out.size());
-//						sourceDataLine.write(b, 0, b.length); // Reproduzco lo recibido						
-//					}
-//				}
-//			};
 			
-			
-			
+			// Creo un hilo con los controles (parar, reiniciar y salir)
 			Thread hiloControlador = new Thread() 
 			{
 				@Override public void run() 
@@ -132,23 +92,12 @@ public class SongPlayer {
 							}
 						}
 						else if(opcion==2) {
-							// TODO: poner aquí la cyclic barrier y que el udpSongPlayer sólo se cierre
 							udpSongPlayer.awaitAndClose();
 							break;
 						}
 					}			
 				}
 			};
-			
-//			Timer timer= new Timer();
-//			TimerTask concluirCancion = new TimerTask() {
-//
-//				@Override public void run() {
-//					sourceDataLine.stop();
-//					sourceDataLine.close();
-//				}
-//				
-//			};
 			
 			// Me pongo a recibir paquetes udp
 			Thread threadReceptor = new Thread(udpSongReceptor);
@@ -166,9 +115,7 @@ public class SongPlayer {
 			
 			// Pongo a esperar el SongPlayer hasta que el usuario decida salir.
 			barrier.await();
-			
-//			timer.schedule(concluirCancion, (long) (1000*song.getDuration())); //seg->mseg
-					
+								
 		} catch (SocketException e) {
 			e.printStackTrace();
 		} catch (LineUnavailableException e) {

@@ -48,7 +48,7 @@ public class AtenderPeticion extends Thread {
 				String peticion = inputPeticion.readLine();
 				
 				if(peticion==null) {
-					System.out.println("Servidor> Se ha desconectado el cliente " 
+					System.out.println("Servidor(peticiones)> Se ha desconectado el cliente " 
 										+ socket.getInetAddress() + "/" + socket.getPort() + ".");
 					return;
 				}			
@@ -76,17 +76,25 @@ public class AtenderPeticion extends Thread {
 	{
 		if(peticion.equals("GET SONG")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita reproducir una canción.");
 			streamSong();
 		} 
 		else if(peticion.equals("GET SONGLIST")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita la lista de canciones.");
 			sendSongList();
 		}
 		else if(peticion.equals("GET ALL PLAYLISTS")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita sus listas de reproducción.");
 			sendPlaylists();
 		}
 		else if(peticion.equals("GET PLAYLIST")) {
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita reproducir una lista.");
 			streamPlaylist();
 		}
 	}
@@ -98,10 +106,14 @@ public class AtenderPeticion extends Thread {
 	private void atenderPOST(String peticion) {
 		if(peticion.equals("POST PLAYLIST")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita crear una lista de reproducción.");
 			createPlaylist();
 		}
 		else if(peticion.equals("POST SONGS")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita añadir canciones a una lista de reproducción.");
 			addSongsToPlaylist();
 		}
 	}
@@ -113,10 +125,14 @@ public class AtenderPeticion extends Thread {
 	private void atenderDELETE(String peticion) {
 		if(peticion.equals("DELETE PLAYLIST")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita eliminar una lista de reproducción.");
 			deletePlaylist();
 		}
 		else if(peticion.equals("DELETE SONGS")) 
 		{
+			System.out.println("Servidor(peticiones)> El cliente " +
+					socket.getInetAddress() + "/" + socket.getPort() + " solicita borrar canciones de una lista.");
 			deleteSongsFromPlaylist();
 		}
 	}
@@ -140,6 +156,7 @@ public class AtenderPeticion extends Thread {
 	/* Método que recibe y retransmite la playlist que el cliente quiere reproducir mediante un objeto
 	 * de tipo PlaylistStreaming.
 	 */
+	@SuppressWarnings("unchecked")
 	private void streamPlaylist() 
 	{
 		try {

@@ -8,7 +8,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -51,6 +50,8 @@ public class SongStreaming {
 					// Streameo el contenido de la canción vía UDP
 					byte[] b = new byte[128];
 					int leido;
+					System.out.println("Servidor(streaming)> Comienza el streaming al cliente " +
+							socket.getInetAddress() + "/" + socket.getPort() + ".");
 					while((leido = audioInputStream.read(b))!= -1) 
 					{
 						// El cliente tiene un socket udp escuchando en el puerto siguiente a su puerto local tcp.
@@ -58,7 +59,7 @@ public class SongStreaming {
 						udpSocket.send(packet);
 					}
 				}
-				System.out.println("Servidor> El envío de paquetes udp al cliente " +
+				System.out.println("Servidor(streaming)> El envío de paquetes udp al cliente " +
 									socket.getInetAddress() + "/" + socket.getPort() + " ha finalizado.");	
 		
 			} catch (UnsupportedAudioFileException | IOException e) {

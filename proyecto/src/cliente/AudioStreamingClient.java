@@ -24,6 +24,12 @@ public class AudioStreamingClient {
 	private List<Song> canciones;
 	private HashMap<String, LinkedList<Song>> playlists;
 	
+	public static void main(String [] args) 
+	{
+		AudioStreamingClient cliente = new AudioStreamingClient();
+		cliente.init();
+	}
+	
 	/* Método que inicializa el AudioStreamingClient, loggea al usuario y que invoca al método menu() 
 	 * para permitir al usuario elegir qué hacer.
 	 */
@@ -55,7 +61,7 @@ public class AudioStreamingClient {
 	/* Método que loggea al usuario en el servidor para poder gestionar de forma
 	 * personalizada sus listas de reproducción.
 	 */
-	public void login() {
+	private void login() {
 		try {
 			// El cliente se identifica para poder gestionar sus playlists.
 			System.out.println("Cliente(login)> Introduce tu nombre de usuario, por favor:");
@@ -74,7 +80,7 @@ public class AudioStreamingClient {
 	 * de desconexión, el servidor sigue pendiente de recibir una petición y lee null,
 	 * con lo que sabe que el cliente se ha desconectado exitosamente.
 	 */
-	public void menu() {
+	private void menu() {
 		// Muestro el menú con las opciones al cliente.
 		while(true) 
 		{
@@ -136,7 +142,7 @@ public class AudioStreamingClient {
 
 	/* Método que muestra por pantalla el listado de canciones que se le pasa por parámetro.
 	 */
-	public void mostrarCanciones(List<Song> canciones) {
+	private void mostrarCanciones(List<Song> canciones) {
 		
 		/* Utilizo "printf" para imprimir una tablita con las canciones. Para darle un formato
 		 * más legible, calculo el tamaño del título de canción más largo y le sumo uno.
@@ -169,7 +175,7 @@ public class AudioStreamingClient {
 	 * atributo "canciones".
 	 */
 	@SuppressWarnings("unchecked")
-	public void solicitarCanciones() 
+	private void solicitarCanciones() 
 	{
 		try {
 			// Hago la petición del listado de canciones
@@ -199,7 +205,7 @@ public class AudioStreamingClient {
 	 * muestra por pantalla.
 	 */
 	
-	public void reproducirCancion() 
+	private void reproducirCancion() 
 	{	
 		Song s = seleccionarCancion();
 		try {
@@ -222,7 +228,7 @@ public class AudioStreamingClient {
 	 * El listado del atributo "canciones" tiene al menos una canción.
 	 * Devuelve la canción seleccionada.
 	 */
-	public Song seleccionarCancion()
+	private Song seleccionarCancion()
 	{
 		System.out.println("Cliente> Seleccione un Id de canción:");
 		mostrarCanciones(this.canciones);
@@ -247,7 +253,7 @@ public class AudioStreamingClient {
 	/* Método que muestra por pantalla el gestor de playlists. El usuario puede solicitar ver sus
 	 * playlists, solicitar reproducir una o crear una playlist.
 	 */
-	public void menuPlaylists() {
+	private void menuPlaylists() {
 		// Muestro el menú de las playlist al cliente
 		while(true) 
 		{
@@ -355,7 +361,7 @@ public class AudioStreamingClient {
 	
 	/* Método que muestra las playlists por pantalla. Existe al menos una playlist que mostrar.
 	 */
-	public void mostrarPlaylists() 
+	private void mostrarPlaylists() 
 	{
 		List<String> titulos = new ArrayList<String>(playlists.size());
 		playlists.keySet().forEach(s->titulos.add(s));
@@ -379,7 +385,7 @@ public class AudioStreamingClient {
 	 * "playlists" de la clase.
 	 */
 	@SuppressWarnings("unchecked")
-	public void solicitarPlaylists() 
+	private void solicitarPlaylists() 
 	{
 		try {
 			// Hago la petición de las playlists
@@ -398,7 +404,7 @@ public class AudioStreamingClient {
 	/* Método que permite seleccionar una playlist y ver su contenido de canciones.
 	 * Si la playlist está vacía, no hace nada.
 	 */
-	public void mostrarCancionesPlaylist() 
+	private void mostrarCancionesPlaylist() 
 	{
 		// 1º Selecciono la canción
 		List<Song> playlist = seleccionarPlaylist();
@@ -417,7 +423,7 @@ public class AudioStreamingClient {
 	
 	/* Método que devuelve el nombre de la playlist.
 	 */
-	public String obtenerTituloPlaylist(List<Song> playlist)
+	private String obtenerTituloPlaylist(List<Song> playlist)
 	{
 
 		String nombrePlaylist = null;
@@ -435,7 +441,7 @@ public class AudioStreamingClient {
 	/* Método para reproducir una playlist una vez seleccionada.
 	 * Si la playlist está vacía, no hace nada.
 	 */
-	public void reproducirPlaylist() 
+	private void reproducirPlaylist() 
 	{
 		// 1º Selecciono qué playlist reproducir
 		List<Song> playlist = seleccionarPlaylist();
@@ -468,7 +474,7 @@ public class AudioStreamingClient {
 	
 	/* Método para seleccionar una playlist. El atributo "playlists" es no nulo y tiene tamaño mayor que cero.
 	 */
-	public List<Song> seleccionarPlaylist() 
+	private List<Song> seleccionarPlaylist() 
 	{		
 		System.out.println("Cliente(playlists)> Seleccione un Id de lista de reproducción:");
 		mostrarPlaylists();
@@ -501,7 +507,7 @@ public class AudioStreamingClient {
 	/* Método para crear una playlist, que tiene que tener un nombre único. Si se introduce un nombre
 	 * que ya existe, solicita uno nuevo. Debe haber al menos una canción en el atributo "canciones".
 	 */
-	public void crearPlaylist() 
+	private void crearPlaylist() 
 	{
 		try {
 			// Hago la petición de crear una playlist
@@ -549,7 +555,7 @@ public class AudioStreamingClient {
 	/* Método que elimina una playlist seleccionada.
 	 * Deben existir playlists en "playlists".
 	 */
-	public void eliminarPlaylist() 
+	private void eliminarPlaylist() 
 	{
 		try {
 			// 1º Seleccionar la playlist y preguntar si el usuario está seguro
@@ -597,7 +603,7 @@ public class AudioStreamingClient {
 	 * Si cancionesPlaylistBorrar es no nula, al menos tiene una canción.
 	 * Para añadir, el atributo "canciones" debe tener tamaño mayor que cero.
 	 */
-	public List<Song> seleccionarCancionesPlaylist() 
+	private List<Song> seleccionarCancionesPlaylist() 
 	{
 		System.out.println("Cliente(playlists)> Introduce el Id de la canción que quieras añadir a la playlist. Escribe -1 para terminar.");
 		mostrarCanciones(this.canciones);
@@ -632,7 +638,7 @@ public class AudioStreamingClient {
 	/* Método para añadir canciones a una playlist una vez seleccionadas. El atributo "canciones" tiene
 	 * al menos una canción.
 	 */
-	public void añadirCancionesAPlaylist() 
+	private void añadirCancionesAPlaylist() 
 	{
 		try {
 			// 1º Hago la petición de añadir canciones a una playlist
@@ -662,7 +668,7 @@ public class AudioStreamingClient {
 	/* Método para borrar canciones de una playlist una vez seleccionadas. 
 	 * Si la playlist está vacía, no hace nada.
 	 */
-	public void eliminarCancionesDePlaylist() 
+	private void eliminarCancionesDePlaylist() 
 	{
 		try {						
 			// 1º Selecciono una playlist y las canciones a borrar 
@@ -703,7 +709,7 @@ public class AudioStreamingClient {
 	 * Nos interesa por tanto almacenar el integer que dice su posición en la playlist. Por razones
 	 * de implementación devolvemos por tanto una lista con las posiciones.
 	 */
-	public HashSet<Integer> seleccionarCancionesBorrarPlaylist(List<Song> playlist) 
+	private HashSet<Integer> seleccionarCancionesBorrarPlaylist(List<Song> playlist) 
 	{
 		System.out.println("Cliente(playlists)> Introduce el Id de la canción que quieras borrar de la playlist. Escribe -1 para terminar.");
 		mostrarCanciones(playlist);
