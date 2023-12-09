@@ -43,6 +43,8 @@ public class SongStreaming {
 			this.udpSocket = new DatagramSocket(socket.getLocalPort() + 1);
 
 			try {
+				System.out.println("Servidor(streaming)> Comienza el streaming al cliente " +
+						socket.getInetAddress() + "/" + socket.getPort() + ".");
 				for(Song song: songs) {
 					// Obtengo el audioInputStream del fichero de la canción solicitada.
 					AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(song.getFile());
@@ -50,8 +52,6 @@ public class SongStreaming {
 					// Streameo el contenido de la canción vía UDP
 					byte[] b = new byte[128];
 					int leido;
-					System.out.println("Servidor(streaming)> Comienza el streaming al cliente " +
-							socket.getInetAddress() + "/" + socket.getPort() + ".");
 					while((leido = audioInputStream.read(b))!= -1) 
 					{
 						// El cliente tiene un socket udp escuchando en el puerto siguiente a su puerto local tcp.
